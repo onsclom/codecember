@@ -1,70 +1,61 @@
 // @format
-const zoom = 25;
+const zoom = 10;
 let time = 0;
 let unit;
-
-let arcs = [];
-let arcAmount = 25;
-let curD = 0;
-
-let colors;
+const speed = 0.02;
+const squareSize = 10;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background(0);
-  noFill();
-
-  colors = [color(255, 100, 100), color(100, 255, 100), color(100, 100, 255)];
-
-  for (let i = 0; i < arcAmount; i++) {
-    let nextThick = random(0.1, 0.7);
-    arcs.push(new Arc(curD + nextThick, nextThick + 0.01));
-    curD += nextThick * 2;
-  }
+  background(100);
+  rectMode(CENTER);
 }
 
 function draw() {
   time += 1;
   unit = windowHeight / zoom;
-  background(color(0, 0, 0, 100));
+  background(0, 0, 0, 20);
   stroke(255);
-  strokeWeight(unit * 0.1);
-  const speed = 0.05;
-
-  for (let arc of arcs) {
-    arc.draw();
+  strokeWeight(unit * 0.02);
+  //  circle(windowWidth / 2, windowHeight / 2, unit * 2);
+  for (let y = 0; y < squareSize; y++) {
+    for (let x = 0; x < squareSize; x++) {
+      drawPart(x, y);
+    }
   }
+}
+
+function drawPart(x, y) {
+  let centerX = windowWidth / 2;
+  let centerY = windowHeight / 2;
+
+  let distanceMod = 8 + sin(time * speed);
+
+  let curMult = sin(time * speed) / 2 + 0.5;
+  let offsetx = (noise(x, y) - 0.5) * curMult * unit;
+  let offsety = (noise(y, x) - 0.5) * curMult * unit;
+
+  push();
+  translate(
+    offsetx +
+      centerX +
+      (x - squareSize / 2 + 0.5) * ((unit / squareSize) * distanceMod),
+    offsety +
+      centerY +
+      (y - squareSize / 2 + 0.5) * ((unit / squareSize) * distanceMod),
+  );
+
+  let angle = (x + y) % PI;
+  console.log(angle);
+  angle *= sin(time * speed) / 2 + 0.5;
+
+  rotate(angle);
+
+  square(0, 0, (unit * 5) / squareSize);
+
+  pop();
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-}
-
-class Arc {
-  constructor(d, thickness) {
-    this.d = d;
-    this.thickness = thickness;
-    this.amount = random(PI / 4, (PI * 3) / 2);
-    this.speed = random(0.02, 0.05);
-    this.speed *= 0.5;
-    this.color = colors[floor(random() * colors.length)];
-    this.color = color(floor(random(50, 256)));
-
-    if (random() < 0.5) {
-      this.speed *= -1;
-    }
-  }
-
-  draw() {
-    strokeWeight(this.thickness * unit);
-    stroke(this.color);
-    arc(
-      windowWidth / 2,
-      windowHeight / 2,
-      this.d * unit,
-      this.d * unit,
-      time * this.speed,
-      time * this.speed + this.amount,
-    );
-  }
 }
